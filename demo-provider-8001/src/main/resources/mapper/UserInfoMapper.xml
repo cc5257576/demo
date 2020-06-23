@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cc.provider.dao.UserInfoMapper">
+    <resultMap id="UserInfoBaseMap" type="com.cc.provider.pojo.UserInfoPO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="account_id" property="accountId" jdbcType="INTEGER"/>
+        <result column="phone_no" property="phoneNo" jdbcType="VARCHAR"/>
+        <result column="full_name" property="fullName" jdbcType="VARCHAR"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="sex" property="sex" jdbcType="INTEGER"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="province" property="province" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="county" property="county" jdbcType="VARCHAR"/>
+        <result column="street" property="street" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="card_no" property="cardNo" jdbcType="VARCHAR"/>
+        <result column="card_positive_fid" property="cardPositiveFid" jdbcType="INTEGER"/>
+        <result column="card_negative_fid" property="cardNegativeFid" jdbcType="INTEGER"/>
+        <result column="card_status" property="cardStatus" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="UserInfoBoMap" type="com.cc.common.domian.UserInfoBO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="account" property="account" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.cc.provider.pojo.UserInfoPO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_info (account_id, phone_no, full_name, age, sex, status, province, city, county, street, address,
+        card_no, card_positive_fid, card_negative_fid, card_status, type, create_by, create_time)
+        VALUES (#{accountId}, #{phoneNo}, #{fullName}, #{age}, #{sex}, #{status}, #{province}, #{city}, #{county}, #{street},
+        #{address}, #{cardNo}, #{cardPositiveFid}, #{cardNegativeFid}, #{cardStatus}, #{type}, #{createBy}, now());
+    </insert>
+
+    <select id="get" parameterType="Integer" resultMap="UserInfoBaseMap">
+        select u.*
+        from user_info u where u.id = #{id} limit 1;
+    </select>
+
+    <select id="getById" parameterType="Integer" resultMap="UserInfoBoMap">
+        select u.id, a.account, a.password,u.create_time
+        from user_info u inner join  account_info a on u.account_id = a.id
+        where u.id = #{id} limit 1;
+    </select>
+
+    <select id="getByPhoneNo" parameterType="String" resultMap="UserInfoBaseMap">
+        select * from user_info where phone_no = #{phoneNo} limit 1;
+    </select>
+</mapper>

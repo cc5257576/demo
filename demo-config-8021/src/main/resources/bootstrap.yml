@@ -1,0 +1,32 @@
+server:
+  port: 8021
+
+#actuator监控配置, 加载所有的端点/默认只加载了 info / health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  application:
+    name: demo-config
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config/{application}
+          add-label-locations: false
+
+eureka:
+  instance:
+    hostname: 127.0.0.1
+    instance-id: demo-config-8021
+    prefer-ip-address: false
+  client:
+    service-url:
+      #      defaultZone: http://test.eureka-8101.com:8101/eureka/,http://test.eureka-8102.com:8102/eureka/
+      defaultZone: http://test.eureka-8101.com:8101/eureka/
+    register-with-eureka: true #设置为false表示关闭自己注册到eureka
+    fetch-registry: true #设置为false表示不从eureka获取注册信息

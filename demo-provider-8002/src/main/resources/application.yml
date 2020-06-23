@@ -1,0 +1,43 @@
+server:
+  port: 8002
+spring:
+  application:
+    name: demo-provider
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/demo?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: root
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    filters:
+      - stat,log4j
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis:
+  type-aliases-package: com.cc.provider.pojo
+  mapper-locations: classpath*:mapper/*.xml
+
+#eureka:
+#  instance:
+#    hostname: 127.0.0.1
+#    instance-id: demo-provider-8002
+#    prefer-ip-address: false
+#    lease-renewal-interval-in-seconds: 2 # 设置心跳的时间间隔（默认是30秒）
+#    lease-expiration-duration-in-seconds: 5 # 等待下一次心跳的超时时间 如果现在超过了5秒的间隔（默认是90秒）
+#  client:
+#    service-url:
+#      defaultZone: http://test.eureka-8101.com:8101/eureka/,http://test.eureka-8102.com:8102/eureka/

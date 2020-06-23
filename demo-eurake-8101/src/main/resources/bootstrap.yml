@@ -1,0 +1,21 @@
+server:
+  port: 8101
+spring:
+  application:
+    name: demo-eurake
+eureka:
+  instance:
+    hostname: test.eureka-8101.com
+    instance-id: demo-eurake-8101
+    prefer-ip-address: false
+  server:
+    enable-self-preservation: false #设置为false表示关闭保护模式
+    eviction-interval-timer-in-ms: 60000 # 设置清理的间隔时间，而后这个时间使用的是毫秒单位（默认是60秒）
+  client:
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/ #修改默认端口和访问ip
+    #      defaultZone: http://test.eureka-8102.com:8102/eureka/ #修改默认端口和访问ip
+    register-with-eureka: false #设置为false表示关闭自己注册到eureka
+    fetch-registry: false #设置为false表示不从eureka获取注册信息
+    healthcheck:
+      enabled: true

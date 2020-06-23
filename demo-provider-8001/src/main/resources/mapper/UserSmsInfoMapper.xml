@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cc.provider.dao.UserSmsInfoMapper">
+    <resultMap id="UserSmsInfoBaseMap" type="com.cc.provider.pojo.UserSmsInfoPO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="phone_no" property="phoneNo" jdbcType="INTEGER"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="verify_code" property="verifyCode" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="is_use" property="isUse" jdbcType="INTEGER"/>
+        <result column="channel" property="channel" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.cc.provider.pojo.UserSmsInfoPO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_sms_info (user_id, phone_no, content, verify_code, type, status, is_use, channel, create_time)
+        VALUES(#{userId}, #{phoneNo}, #{content}, #{verifyCode}, #{type}, #{status}, #{isUse}, #{channel}, now())
+    </insert>
+
+    <update id="validateSms" parameterType="com.cc.provider.pojo.UserSmsInfoPO">
+        update user_sms_info set is_use = 1, update_time = now() where phone_no = #{phoneNo} and verify_code = #{verifyCode}
+        and type = #{type} and status = #{status} and is_use = #{isUse}
+    </update>
+</mapper>

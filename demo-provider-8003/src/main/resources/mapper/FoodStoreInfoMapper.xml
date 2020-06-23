@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heque.eat.express.dao.FoodStoreInfoMapper">
+  <resultMap id="BaseResultMap" type="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="store_name" jdbcType="VARCHAR" property="storeName" />
+    <result column="store_city" jdbcType="VARCHAR" property="storeCity" />
+    <result column="store_address" jdbcType="VARCHAR" property="storeAddress" />
+    <result column="shipping_fee" jdbcType="REAL" property="shippingFee" />
+    <result column="store_phone_area" jdbcType="VARCHAR" property="storePhoneArea" />
+    <result column="store_phone_number" jdbcType="BIGINT" property="storePhoneNumber" />
+    <result column="noon_take_food_time" jdbcType="VARCHAR" property="noonTakeFoodTime" />
+    <result column="night_take_food_time" jdbcType="VARCHAR" property="nightTakeFoodTime" />
+    <result column="store_img" jdbcType="VARCHAR" property="storeImg" />
+    <result column="create_by" jdbcType="BIGINT" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_by" jdbcType="BIGINT" property="updateBy" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="latitude" jdbcType="DOUBLE" property="latitude" />
+    <result column="longitude" jdbcType="DOUBLE" property="longitude" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column= "parent_store_id" jdbcType="BIGINT" property = "parentStoreId"/>
+    <result column="provide_style"  jdbcType="VARCHAR" property= "provideStyle" />
+    <result column="isDel" jdbcType="INTEGER" property="isdel" />
+    <result column= "fee_type"  jdbcType="INTEGER"  property = "feeType" />
+  </resultMap>
+  
+  <!-- 返回的门店id和name数据 -->
+  <!-- <resultMap type="com.heque.eat.express.pojo.fsi.FoodStoreIdName" id="FoodStoreIdNameMap">
+     <id column="id" jdbcType="BIGINT" property="id" />
+     <result column = "store_name"  jdbcType = "VARCHAR" property = "foodStoreName"/>
+  </resultMap> -->
+  
+  <resultMap type="com.heque.common.vo.user.CityInfoExt" id="CityAndStoresResultMap">
+       <result column = "code_c"  property = "codeC"  />  
+       <result column = "name"  property = "cityName" />
+       <collection property="storeList" ofType="com.heque.common.vo.user.StoreInfoExt"  column = "code_c"  select = "queryStoresByCodec">
+       </collection> 
+   </resultMap>
+   
+  <sql id="Base_Column_List">
+    id, store_name, store_city, store_address, shipping_fee, store_phone_area, store_phone_number, 
+    noon_take_food_time, night_take_food_time, store_img, create_by, create_time, update_by, 
+    update_time, remark, latitude, longitude, status,parent_store_id,provide_style,isDel,fee_type
+  </sql>
+  
+  <select id="queryStoresByCodec"  parameterType="String"  resultType="com.heque.common.vo.user.StoreInfoExt">
+       select id storeId,store_name storeName,status from food_store_info where store_city = #{code_c} and isDel = 1
+   </select>
+  
+   <!-- 选择全部的城市拉取门店列表集合 -->
+   <select id="getClickAllCity"  resultMap="CityAndStoresResultMap">
+        select code_c,name from city where isDel = 1 and  code_c in
+        <foreach collection="cityCode"  index = "index" item="item" open="(" separator="," close=")">
+             #{item}
+        </foreach>
+   </select>  
+   
+   <!-- 通过门店得到所属城市编码 -->
+   <select id="getCodeCByStoreId"  parameterType="Long"  resultType="com.heque.common.vo.user.StoreStatus">
+        select status,store_city codeC from food_store_info  where id = #{storeId} and isDel = 1
+   </select>
+  
+  
+  <!-- 根据门店id获取该门店下的所有快送员 ,character 角色 1：取餐点管理员，2：取餐点courier,status 用户状态，1 正常用户，2用户挂失，3冻结用户，4黑名单用户-->
+  <select id="getEIds" resultType="com.heque.eat.express.pojo.eei.ExpressEmployeeInfo">
+  	SELECT * FROM express_employee_info eei
+	LEFT JOIN food_store_info fsi ON eei.food_store_info_id = fsi.id
+	WHERE fsi.id = #{foodStoreId} AND eei.`status` = 1 AND eei.`character` = 2
+  </select>
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from food_store_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  
+  <!-- 根据门店找到其下的餐点集合 -->
+  <!-- <select id="getDinnerListByFoodStoreId"  parameterType = "Long"  resultMap = "FoodStoreIdNameMap">
+        select id,store_name from food_store_info where parent_store_id = #{id}
+  </select> -->
+  
+  <!-- 根据门店id和时间查询菜单 -->
+  <select id="getStoreDishesListByTime" parameterType="Map"  resultType="com.heque.eat.express.pojo.fsi.DishesBusinessSituation">
+        SELECT DISTINCT 
+		ee.dishes_id AS dishId,
+		d.`dishes_name` AS dishesName
+		FROM
+		everyday_dishes e
+		LEFT JOIN eat_everyday_dishes_dishes ee
+		ON e.dishes_id = ee.ptri
+		LEFT JOIN dishes d
+		ON ee.dishes_id = d.id
+		WHERE e.create_time BETWEEN #{value1} AND #{value2}
+		and e.`store_info_id` = #{storeId}
+  </select>
+  
+  <!-- 在门店里根据dishid查看中餐或者晚餐时间段，该 菜品待取情况-->
+  <select id="getDaiQuCountByDishId"  parameterType="Map" resultType="Integer">
+      select sum(num) from order_infos oi
+      where  oi.store_id = #{storeId} and oi.dishId = #{dishId} and oi.state in(3,8,9) 
+      and oi.isTakeMeal = 0 and oi.createTime BETWEEN #{value1} AND #{value2}
+  </select>
+  
+  <!-- 在门店里根据dishid查看中餐或者晚餐时间段，该 菜品已售情况 -->
+  <select id="getYiShouCountByDishId" parameterType="Map" resultType="Integer" > 
+      select sum(num) from order_infos oi
+      where  oi.store_id = #{storeId} and  oi.dishId = #{dishId} and oi.state in(3,5,8,9) 
+      and oi.isTakeMeal = 1 and oi.createTime BETWEEN #{value1} AND #{value2}
+  </select>
+  
+  <!--点餐模式，通过门店id获得菜品  -->
+  <select id="getDishesListByStoreId" parameterType="Integer" resultType="com.heque.eat.express.pojo.fsi.DishesBusinessSituation" > 
+      select id dishId,dishes_name dishesName from dishes  where store_id = #{storeId} 
+      and is_del = 1 and type = 1
+  </select>
+  
+   <!-- 自助模式，获取自助菜品信息 -->
+  <select id="getSelfServiceDishes"  resultType="com.heque.eat.express.pojo.fsi.DishesBusinessSituation" >
+       select id dishId,dishes_name dishesName from dishes where type = 4 and is_del = 1
+  </select>
+  
+  
+  <!--返回城市门店或者餐点当天的菜品列表集合  -->
+  <select id="getStoreDishesListByNow" parameterType="Map"  resultType="com.heque.eat.express.pojo.fsi.DishesBusinessSituation">
+        SELECT
+		e.supply_time AS supplyTime,
+		ee.dishes_id AS dishId,
+		d.`dishes_name` AS dishesName
+		FROM
+		everyday_dishes e
+		LEFT JOIN eat_everyday_dishes_dishes ee
+		ON e.dishes_id = ee.ptri
+		LEFT JOIN dishes d
+		ON ee.dishes_id = d.id
+		WHERE e.`store_info_id` = #{storeId}
+		and e.supply_time = #{suppType}
+		AND to_days(e.use_date) = to_days(#{useDate})
+		AND e.type = 2
+		AND ee.is_del = 1
+		AND e.`is_del` = 1
+		AND d.`is_del` = 1
+		AND d.type = 1
+  </select>
+  
+  <!-- 周循环查询，返回城市门店或者餐点当天的菜品列表集合 -->
+  <select id="getStoreDishesListByWeek"  parameterType="Map"  resultType="com.heque.eat.express.pojo.fsi.DishesBusinessSituation">
+        SELECT
+		e.supply_time AS supplyTime,
+		ee.dishes_id AS dishId,
+		d.`dishes_name` AS dishesName
+		FROM
+		everyday_dishes e
+		LEFT JOIN eat_everyday_dishes_dishes ee
+		ON e.dishes_id = ee.ptri
+		LEFT JOIN dishes d
+		ON ee.dishes_id = d.id
+		WHERE e.`store_info_id` = #{storeId}
+		AND e.week = #{week}
+		
+		AND e.type = 1
+		and e.supply_time = #{suppType}
+		AND ee.is_del = 1
+		AND e.`is_del` = 1
+		AND d.`is_del` = 1
+		AND d.type = 1
+  </select>
+  
+  <select id="getAllStoresByCityCode"  parameterType="String"  resultMap="BaseResultMap">
+       select * from `heque_shihui`.food_store_info where store_city = #{codeC}
+          and isDel = 1 and status = 1
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from food_store_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    insert into food_store_info (id, store_name, store_city, 
+      store_address, shipping_fee, store_phone_area, 
+      store_phone_number, noon_take_food_time, night_take_food_time, 
+      store_img, create_by, create_time, 
+      update_by, update_time, remark, 
+      latitude, longitude, status, 
+      isDel)
+    values (#{id,jdbcType=BIGINT}, #{storeName,jdbcType=VARCHAR}, #{storeCity,jdbcType=VARCHAR}, 
+      #{storeAddress,jdbcType=VARCHAR}, #{shippingFee,jdbcType=REAL}, #{storePhoneArea,jdbcType=VARCHAR}, 
+      #{storePhoneNumber,jdbcType=BIGINT}, #{noonTakeFoodTime,jdbcType=VARCHAR}, #{nightTakeFoodTime,jdbcType=VARCHAR}, 
+      #{storeImg,jdbcType=VARCHAR}, #{createBy,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateBy,jdbcType=BIGINT}, #{updateTime,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR}, 
+      #{latitude,jdbcType=DOUBLE}, #{longitude,jdbcType=DOUBLE}, #{status,jdbcType=INTEGER}, 
+      #{isdel,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    insert into food_store_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="storeName != null">
+        store_name,
+      </if>
+      <if test="storeCity != null">
+        store_city,
+      </if>
+      <if test="storeAddress != null">
+        store_address,
+      </if>
+      <if test="shippingFee != null">
+        shipping_fee,
+      </if>
+      <if test="storePhoneArea != null">
+        store_phone_area,
+      </if>
+      <if test="storePhoneNumber != null">
+        store_phone_number,
+      </if>
+      <if test="noonTakeFoodTime != null">
+        noon_take_food_time,
+      </if>
+      <if test="nightTakeFoodTime != null">
+        night_take_food_time,
+      </if>
+      <if test="storeImg != null">
+        store_img,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateBy != null">
+        update_by,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="latitude != null">
+        latitude,
+      </if>
+      <if test="longitude != null">
+        longitude,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="isdel != null">
+        isDel,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="storeName != null">
+        #{storeName,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCity != null">
+        #{storeCity,jdbcType=VARCHAR},
+      </if>
+      <if test="storeAddress != null">
+        #{storeAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="shippingFee != null">
+        #{shippingFee,jdbcType=REAL},
+      </if>
+      <if test="storePhoneArea != null">
+        #{storePhoneArea,jdbcType=VARCHAR},
+      </if>
+      <if test="storePhoneNumber != null">
+        #{storePhoneNumber,jdbcType=BIGINT},
+      </if>
+      <if test="noonTakeFoodTime != null">
+        #{noonTakeFoodTime,jdbcType=VARCHAR},
+      </if>
+      <if test="nightTakeFoodTime != null">
+        #{nightTakeFoodTime,jdbcType=VARCHAR},
+      </if>
+      <if test="storeImg != null">
+        #{storeImg,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null">
+        #{updateBy,jdbcType=BIGINT},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="latitude != null">
+        #{latitude,jdbcType=DOUBLE},
+      </if>
+      <if test="longitude != null">
+        #{longitude,jdbcType=DOUBLE},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="isdel != null">
+        #{isdel,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="queryStoreCityData" resultType="java.lang.String">
+    SELECT DISTINCT store_city FROM `heque_shihui`.food_store_info
+    WHERE `status`=1 AND isDel=1
+  </select>
+  <insert id="insertVirtualStoreInfo" parameterType="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    INSERT INTO `heque_shihui`.v_food_store_info(store_name,store_city,`status`,isDel,create_time)
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (#{item.storeName},#{item.storeCity},1,1,#{item.createTime})
+    </foreach>
+  </insert>
+ <select id="querySumVARStore" resultType="java.lang.Integer">
+  SELECT COUNT(0)+(SELECT COUNT(0) FROM `heque_shihui`.v_food_store_info WHERE `status`=1 AND isDel=1) FROM `heque_shihui`.food_store_info
+  WHERE `status`=1 AND isDel=1
+ </select>
+  <select id="queryRStoreList" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+     FROM `heque_shihui`.food_store_info
+   /* WHERE `status`=1 AND isDel=1*/
+ </select>
+
+  <select id="queryVStoreList" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+    FROM `heque_shihui`.v_food_store_info
+    WHERE `status`=1 AND isDel=1
+
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    update food_store_info
+    <set>
+      <if test="storeName != null">
+        store_name = #{storeName,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCity != null">
+        store_city = #{storeCity,jdbcType=VARCHAR},
+      </if>
+      <if test="storeAddress != null">
+        store_address = #{storeAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="shippingFee != null">
+        shipping_fee = #{shippingFee,jdbcType=REAL},
+      </if>
+      <if test="storePhoneArea != null">
+        store_phone_area = #{storePhoneArea,jdbcType=VARCHAR},
+      </if>
+      <if test="storePhoneNumber != null">
+        store_phone_number = #{storePhoneNumber,jdbcType=BIGINT},
+      </if>
+      <if test="noonTakeFoodTime != null">
+        noon_take_food_time = #{noonTakeFoodTime,jdbcType=VARCHAR},
+      </if>
+      <if test="nightTakeFoodTime != null">
+        night_take_food_time = #{nightTakeFoodTime,jdbcType=VARCHAR},
+      </if>
+      <if test="storeImg != null">
+        store_img = #{storeImg,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null">
+        update_by = #{updateBy,jdbcType=BIGINT},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="latitude != null">
+        latitude = #{latitude,jdbcType=DOUBLE},
+      </if>
+      <if test="longitude != null">
+        longitude = #{longitude,jdbcType=DOUBLE},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="isdel != null">
+        isDel = #{isdel,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.heque.eat.express.pojo.fsi.FoodStoreInfo">
+    update food_store_info
+    set store_name = #{storeName,jdbcType=VARCHAR},
+      store_city = #{storeCity,jdbcType=VARCHAR},
+      store_address = #{storeAddress,jdbcType=VARCHAR},
+      shipping_fee = #{shippingFee,jdbcType=REAL},
+      store_phone_area = #{storePhoneArea,jdbcType=VARCHAR},
+      store_phone_number = #{storePhoneNumber,jdbcType=BIGINT},
+      noon_take_food_time = #{noonTakeFoodTime,jdbcType=VARCHAR},
+      night_take_food_time = #{nightTakeFoodTime,jdbcType=VARCHAR},
+      store_img = #{storeImg,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=BIGINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_by = #{updateBy,jdbcType=BIGINT},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      remark = #{remark,jdbcType=VARCHAR},
+      latitude = #{latitude,jdbcType=DOUBLE},
+      longitude = #{longitude,jdbcType=DOUBLE},
+      status = #{status,jdbcType=INTEGER},
+      isDel = #{isdel,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+
+  <select id="queryStoreListForTask" resultMap="BaseResultMap">
+    SELECT id,SUBSTRING_INDEX(noon_take_food_time,"-",-1) afternoon,SUBSTRING_INDEX(night_take_food_time,"-",-1) evening
+    FROM `heque_shihui`.food_store_info WHERE `status`=1 AND isDel=1
+  </select>
+ <select id="queryById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  SELECT * FROM `heque_shihui`.food_store_info WHERE id=#{id}
+</select>
+</mapper>

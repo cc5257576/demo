@@ -1,0 +1,9 @@
+2019-09-20 15:08:47.026 [main] INFO  com.cc.provider.service.UserInfoServiceTest - Starting UserInfoServiceTest on PC-20190815ZKMC with PID 11108 (started by Administrator in E:\Workspace\Test\demo\demo-provider-8001)
+2019-09-20 15:08:47.043 [main] INFO  com.cc.provider.service.UserInfoServiceTest - No active profile set, falling back to default profiles: default
+2019-09-20 15:08:49.918 [main] INFO  springfox.documentation.spring.web.PropertySourcedRequestMappingHandlerMapping - Mapped URL path [/v2/api-docs] onto method [public org.springframework.http.ResponseEntity<springfox.documentation.spring.web.json.Json> springfox.documentation.swagger2.web.Swagger2Controller.getDocumentation(java.lang.String,javax.servlet.http.HttpServletRequest)]
+2019-09-20 15:08:50.798 [main] INFO  springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper - Context refreshed
+2019-09-20 15:08:50.821 [main] INFO  springfox.documentation.spring.web.plugins.DocumentationPluginsBootstrapper - Found 1 custom documentation plugin(s)
+2019-09-20 15:08:50.849 [main] INFO  springfox.documentation.spring.web.scanners.ApiListingReferenceScanner - Scanning for api listing references
+2019-09-20 15:08:50.939 [main] INFO  com.cc.provider.service.UserInfoServiceTest - Started UserInfoServiceTest in 4.156 seconds (JVM running for 5.139)
+2019-09-20 15:08:51.145 [main] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2019-09-20 15:08:51.456 [Thread-2] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed

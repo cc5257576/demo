@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cc.provider.dao.AccountInfoMapper">
+    <resultMap id="AccountInfoMap" type="com.cc.provider.pojo.AccountInfoPO">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="account" property="account" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="pet_name" property="petName" jdbcType="VARCHAR"/>
+        <result column="portrait_fid" property="portraitFid" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="last_time" property="lastTime" jdbcType="TIMESTAMP"/>
+        <result column="qq_open_id" property="qqOpenId" jdbcType="VARCHAR"/>
+        <result column="wechat_union_id" property="wechatUnionId" jdbcType="VARCHAR"/>
+        <result column="wechat_time" property="wechatTime" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="invite_code" property="inviteCode" jdbcType="VARCHAR"/>
+        <result column="source_type" property="sourceType" jdbcType="INTEGER"/>
+        <result column="channel_id" property="channelId" jdbcType="INTEGER"/>
+        <result column="disable_time" property="disableTime" jdbcType="TIMESTAMP"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.cc.provider.pojo.AccountInfoPO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO account_info (account, password, pet_name, portrait_fid, type, last_time, qq_open_id, wechat_union_id, wechat_time,
+         remark, invite_code, source_type, channel_id, disable_time, create_by, create_time)
+        VALUES (#{account}, #{password}, #{petName}, #{portraitFid}, #{type}, now(), #{qqOpenId}, #{wechatUnionId}, #{wechatTime},
+         #{remark}, #{inviteCode}, #{sourceType}, #{channelId}, #{disableTime}, #{createBy}, now());
+    </insert>
+
+    <select id="getById" parameterType="Integer" resultMap="AccountInfoMap">
+        select * from account_info where id = #{id} limit 1;
+    </select>
+</mapper>

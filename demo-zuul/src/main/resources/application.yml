@@ -1,0 +1,43 @@
+server:
+  port: 8201
+
+#actuator监控配置, 加载所有的端点/默认只加载了 info / health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+spring:
+  application:
+    name: demo-zuul
+  profiles:
+    active: nactive
+  zipkin:
+    base-url: http://127.0.0.1:8051
+  sleuth:
+    sampler:
+      probability: 1.0 # 定义抽样比率，默认为0.1
+eureka:
+  instance:
+    hostname: 127.0.0.1
+    instance-id: demo-zuul
+    prefer-ip-address: false
+  client:
+    service-url:
+#      defaultZone: http://test.eureka-8101.com:8101/eureka/,http://test.eureka-8102.com:8102/eureka/
+      defaultZone: http://test.eureka-8101.com:8101/eureka/
+    register-with-eureka: true #设置为false表示关闭自己注册到eureka
+    fetch-registry: true #设置为false表示不从eureka获取注册信息
+    registry-fetch-interval-seconds: 5 #表示eureka client间隔多久去拉取服务注册信息，默认为30秒
+zuul:
+  routes:
+#    demo-consumer: /consumer-proxy/**
+    consumer:
+      path: /consumer-proxy/**
+      service-id: demo-consumer
+  ignored-services:
+    "*"
+
+excludeUrlPaths: /consumer-proxy/user/get
+

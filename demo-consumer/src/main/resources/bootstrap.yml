@@ -1,0 +1,49 @@
+server:
+  port: 8010
+
+spring:
+  application:
+    name: demo-consumer
+  zipkin:
+    base-url: http://127.0.0.1:8051
+  sleuth:
+    sampler:
+      probability: 1.0 # 定义抽样比率，默认为0.1
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  cloud:
+    config:
+#      uri: http://127.0.0.1:8021/
+      discovery:
+        service-id: demo-config
+        enabled: true
+      profile: dev
+#      enabled: true
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+eureka:
+  instance:
+    hostname: 127.0.0.1
+    instance-id: demo-consumer
+    prefer-ip-address: false
+  client:
+    service-url:
+#      defaultZone: http://test.eureka-8101.com:8101/eureka/,http://test.eureka-8102.com:8102/eureka/
+      defaultZone: http://test.eureka-8101.com:8101/eureka/
+    register-with-eureka: true #设置为false表示关闭自己注册到eureka
+    fetch-registry: true #设置为false表示不从eureka获取注册信息
+
+feign:
+  hystrix:
+    enabled: false #设置位true表示开启熔断处理
+
+#actuator监控配置, 加载所有的端点/默认只加载了 info / health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
